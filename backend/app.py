@@ -1,36 +1,58 @@
 from datetime import datetime, date
 import json
 from decimal import Decimal
+import os
 
-from flask import Flask, jsonify, request, abort
+from flask import Flask, jsonify, request, abort, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from sqlalchemy.dialects.sqlite import JSON  # works on SQLite ≥3.38
 from sqlalchemy import func
-# If your SQLite is older, store JSON as Text and json.dumps/loads manually.
 
-from ndc_service import get_drug_info_by_ndc   # <- the helper above
+# Import Flask-Dance for Google OAuth
+from flask_dance.contrib.google import make_google_blueprint, google
+
+from ndc_service import get_drug_info_by_ndc  # <- the helper above
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///Marketplace.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+# Set a secret key; in production, set this as an environment variable.
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "supersekrit")
 db = SQLAlchemy(app)
 
 CORS(app)
 
-# ----------  NEW MODEL  ----------
-class Medicine(db.Model):
-    # pharamacy info
-    product_ndc = db.Column(db.String(20), nullable=False)
-    pharmacy_name = db.Column(db.String(120), nullable=False)
-    address = db.Column(db.String(250), nullable=False)  # <-- new field
+# ----------------------- User Model -----------------------
+class User(db.Model):
     unique_id = db.Column(db.String(250), primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    name = db.Column(db.String(120), nullable=False)
+    role = db.Column(db.String(50), nullable=False)
+    address = db.Column(db.String(250), nullable=False)
+
+    def to_dict(self):
+        return {
+            "unique_id": self.unique_id,
+            "email": self.email,
+            "name": self.name,
+            "role": self.role,
+            "address": self.address,
+        }
+
+# ----------------------- Medicine Model -----------------------
+class Medicine(db.Model):
+    # pharmacy info
+    product_ndc = db.Column(db.String(20), primary_key=True)
+    pharmacy_name = db.Column(db.String(120), nullable=False)
+    address = db.Column(db.String(250), nullable=False)
+    pharmacy_id = db.Column(db.String(250), nullable=False)
     price = db.Column(db.Numeric(10, 2), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     pharmacy_expiration = db.Column(db.Date, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    #drug info
+    # drug info
     generic_name = db.Column(db.String(250), nullable=False)
     labeler_name = db.Column(db.String(250), nullable=False)
     brand_name = db.Column(db.String(250), nullable=False)
@@ -41,19 +63,17 @@ class Medicine(db.Model):
     package_description = db.Column(db.String(250), nullable=False)
     pharm_class = db.Column(db.String(250), nullable=False)
     
-    
     def to_dict(self):
         return {
             # pharmacy info
             "product_ndc":          self.product_ndc,
             "pharmacy_name":        self.pharmacy_name,
             "address":              self.address,
-            "unique_id":           self.unique_id,
+            "pharmacy_id":          self.pharmacy_id,
             "price":                str(self.price),
-            "quantity":             self.quantity,                 # typo fixed
+            "quantity":             self.quantity,
             "pharmacy_expiration":  self.pharmacy_expiration.isoformat(),
             "created_at":           self.created_at.isoformat(),
-
             # drug info
             "generic_name":         self.generic_name,
             "labeler_name":         self.labeler_name,
@@ -66,20 +86,52 @@ class Medicine(db.Model):
             "pharm_class":          self.pharm_class,
         }
 
-
 with app.app_context():
     db.create_all()
 
-# ----------  MEDICINE ENDPOINTS  ----------
+# google login endpoint
+@app.route("/google_login", methods=["POST"])
+def test_google_login():
+    data = request.get_json(force=True)
+    # Expect data to include: id, email, name, role, and address.
+    google_unique_id = data.get("id")
+    email = data.get("email")
+    name = data.get("name", "Unknown")
+    role_input = data.get("role", "").lower()
+    role = role_input if role_input in ["pharmacy", "non_profit"] else "non_profit"
+    address = data.get("address", "No address provided")
+    
+    user = User.query.filter_by(email=email).first()
+    if user is None:
+        user = User(
+            unique_id=google_unique_id,
+            email=email,
+            name=name,
+            role=role,
+            address=address
+        )
+        db.session.add(user)
+        db.session.commit()
+    else:
+        user.name = name
+        user.role = role
+        user.address = address
+        db.session.commit()
+    
+    session["user"] = user.to_dict()
+    return jsonify({
+        "message": "Test Google login successful",
+        "user": user.to_dict()
+    })
+
+# ----------------------- Medicine Endpoints -----------------------
 @app.route("/medicines", methods=["GET"])
 def list_medicines():
     return jsonify([m.to_dict() for m in Medicine.query.all()])
 
 @app.route("/medicines/<string:product_ndc>", methods=["GET"])
 def get_medicine(product_ndc):
-    print("first")
     med = db.session.get(Medicine, product_ndc)
-    print("second")
     if med is None:
         abort(404, description="Medicine not found")
     return jsonify(med.to_dict())
@@ -90,11 +142,11 @@ def create_medicine():
     try:
         pharmacy_name = data["pharmacy_name"].strip()
         quantity = int(data["quantity"].strip())
-        address = data["address"].strip()  
+        address = data["address"].strip()
         price = Decimal(str(data["price"]))
         pharmacy_expiration = date.fromisoformat(data["pharmacy_expiration"])
         product_ndc = data["product_ndc"].strip()
-        created_at = datetime.utcnow()
+        pharmacy_id = data["pharmacy_id"].strip()
     except (KeyError, ValueError) as exc:
         abort(400, description=f"Invalid payload: {exc}")
 
@@ -102,11 +154,7 @@ def create_medicine():
     if ndc_info is None:
         abort(404, description="No open‑FDA record found for that NDC")
 
-    # Create a unique ID by combining product_ndc and pharmacy address
-    # Remove spaces and special characters to ensure consistency
-    unique_id = f"{product_ndc}_{address.lower().replace(' ', '_').replace(',', '').replace('.', '')}"
-
-    # Helpers to flatten lists or nested structures into simple strings
+    # Helpers to flatten lists or nested structures into simple strings.
     def csv_or_none(seq: list[str] | None) -> str | None:
         return ", ".join(seq) if seq else None
 
@@ -118,20 +166,15 @@ def create_medicine():
     def first_pkg_desc(pkgs: list[dict] | None) -> str | None:
         return pkgs[0]["description"] if pkgs else None
 
-    if ndc_info is None:
-        abort(404, description="No open‑FDA record found for that NDC")
-
     medicine = Medicine(
         product_ndc = product_ndc,
         pharmacy_name = pharmacy_name,
         address = address,
-        unique_id = unique_id,
+        pharmacy_id = pharmacy_id,
         price = price,
         quantity = quantity,
         pharmacy_expiration = pharmacy_expiration,
         created_at = datetime.utcnow(),
-
-        # drug columns (all come from open‑FDA)
         generic_name = ndc_info.get("generic_name"),
         labeler_name = ndc_info.get("labeler_name"),
         brand_name = ndc_info.get("brand_name"),
@@ -147,8 +190,8 @@ def create_medicine():
     return jsonify(medicine.to_dict()), 201
 
 @app.route("/medicines/<string:product_ndc>", methods=["DELETE"])
-def delete_medicine(med_id):
-    med = Medicine.query.get_or_404(med_id)
+def delete_medicine(product_ndc):
+    med = Medicine.query.get_or_404(product_ndc)
     db.session.delete(med)
     db.session.commit()
     return "", 204
