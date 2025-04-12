@@ -6,6 +6,7 @@ from flask import Flask, jsonify, request, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from sqlalchemy.dialects.sqlite import JSON  # works on SQLite ≥3.38
+from sqlalchemy import func
 # If your SQLite is older, store JSON as Text and json.dumps/loads manually.
 
 from ndc_service import get_drug_info_by_ndc   # <- the helper above
@@ -148,6 +149,20 @@ def delete_medicine(med_id):
     db.session.delete(med)
     db.session.commit()
     return "", 204
+
+@app.route("/medicines/query")
+def query_medicines():
+
+    term = request.args.get("name", "").strip()
+    if not term:
+        abort(400, description="Query string ?name= is required")
+
+    # Perform a case-insensitive exact match by converting both sides to lower case.
+    matches = Medicine.query.filter(
+        func.lower(Medicine.generic_name) == term.lower()
+    ).all()
+
+    return jsonify([m.to_dict() for m in matches])
 
 if __name__ == "__main__":
     app.run(debug=True)
