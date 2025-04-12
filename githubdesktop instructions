@@ -1,0 +1,16 @@
+# 1. Create and switch to a new branch
+git switch -c database
+
+# 2. Make your changes (e.g., modify app.py or create SQLite integration)
+
+# 3. Check what’s changed
+git status
+
+# 4. Stage changes
+git add app.py  # or whatever files you edited
+
+# 5. Commit the changes
+git commit -m "Add SQLite database connection"
+
+# 6. Push the branch to GitHub
+git push -u origin database
