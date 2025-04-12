@@ -3,13 +3,14 @@ import { Send, AlertCircle } from 'lucide-react';
 import './Rx.css'
 
 const Rx = () => {
+    // names of consts have to be same as Flask backend
     const [formData, setFormData] = useState({
       pharmacy_name: '',
       address: '',
-      ndc: '',
+      product_ndc: '',
       quantity: '',
       price: '',
-      expiration_date: ''
+      pharmacy_expiration: ''
     });
     
     const [loading, setLoading] = useState(false);
@@ -33,7 +34,7 @@ const Rx = () => {
       try {
         // Assuming your Flask backend is running at this URL
         // You would replace this with your actual endpoint
-        const response = await fetch('http://localhost:5000/api/prescription', {
+        const response = await fetch('http://127.0.0.1:5000/medicines', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -53,10 +54,10 @@ const Rx = () => {
         setFormData({
           pharmacy_name: '',
           address: '',
-          ndc: '',
+          product_ndc: '',
           quantity: '',
-          cost: '',
-          expiration_date: ''
+          price: '',
+          pharmacy_expiration: ''
         });
         
       } catch (error) {
@@ -118,21 +119,21 @@ const Rx = () => {
           </div>
           
           <div> {/** This is the div for the NDC */}
-            <label htmlFor="ndc" className="block text-sm font-medium text-gray-700 mb-1">
-              NDC
+            <label htmlFor="product_ndc" className="block text-sm font-medium text-gray-700 mb-1">
+              Product_NDC
             </label>
             <input
               type="text"
-              id="ndc"
-              name="ndc"
-              value={formData.ndc}
+              id="product_ndc"
+              name="product_ndc"
+              value={formData.product_ndc}
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
           </div>
           
-          <div className="grid grid-cols-2 gap-4"> {/** div for both Quantity and Cost */}
+          <div className="grid grid-cols-2 gap-4"> {/** div for both Quantity and Price */}
             <div> {/**  */}
               <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">
                 Quantity
@@ -150,14 +151,14 @@ const Rx = () => {
             </div>
             
             <div>
-              <label htmlFor="cost" className="block text-sm font-medium text-gray-700 mb-1">
-                Cost ($)
+              <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
+                Price ($)
               </label>
               <input
                 type="number"
-                id="cost"
-                name="cost"
-                value={formData.cost}
+                id="price"
+                name="price"
+                value={formData.price}
                 onChange={handleChange}
                 min="0.01"
                 step="0.01"
@@ -168,14 +169,14 @@ const Rx = () => {
           </div>
           
           <div> {/** div for expiration date */}
-            <label htmlFor="expiration_date" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="pharmacy_expiration" className="block text-sm font-medium text-gray-700 mb-1">
               Expiration Date
             </label>
             <input
               type="date"
-              id="expiration_date"
-              name="expiration_date"
-              value={formData.expiration_date}
+              id="pharmacy_expiration"
+              name="pharmacy_expiration"
+              value={formData.pharmacy_expiration}
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
