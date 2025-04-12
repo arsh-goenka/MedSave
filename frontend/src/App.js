@@ -33,7 +33,7 @@ function App() {
   };
 
   return (
-    <div>
+    <div className= "App">
       <h1>Todo List</h1>
       <input
         type="text"
