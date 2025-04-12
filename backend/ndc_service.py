@@ -6,14 +6,15 @@ FDA_NDC_URL = "https://api.fda.gov/drug/ndc.json"
 def get_drug_info_by_ndc(ndc_code: str) -> dict | None:
     """
     Hit the open‑FDA NDC endpoint and return the *product‑level* record.
-    We strip the package segment (the last hyphen‑delimited part)
-    because open‑FDA indexes the product code.
+    If given a package NDC (e.g., "12345-6789-01"), strips the package segment.
+    If given a product NDC (e.g., "12345-6789"), uses it as is.
     """
     if not ndc_code:
         raise ValueError("ndc_code cannot be empty")
 
-    # keep everything up to the last hyphen
-    product_ndc = "-".join(ndc_code.split("-")[:-1]) or ndc_code
+    # If it has multiple hyphens, it's a package NDC, so chop off the last segment
+    # If it has one hyphen, it's already a product NDC, so use it as is
+    product_ndc = "-".join(ndc_code.split("-")[:-1]) if ndc_code.count("-") > 1 else ndc_code
 
     params = {"search": f"product_ndc:{product_ndc}", "limit": 1}
 
