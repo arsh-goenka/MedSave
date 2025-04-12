@@ -1,0 +1,202 @@
+.home-header {
+    background: linear-gradient(-230deg, #002855, #0078d7, #00b894);
+    color: white;
+    padding: 4rem 2rem;
+    height: calc(100vh - 64px);
+  
+    /* Makes header a flex container with left content and right boxes */
+    display: flex;
+    justify-content: space-between; 
+    align-items: flex-start; /* Top-align the items, so your text stays near top left */
+  }
+  
+  /* Remove or comment out this old .content-box if you're no longer using it */
+  /*
+  .content-box {
+    background: rgba(0, 0, 0, 0.149);
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 600px;
+    margin-left: 2rem;
+    animation: slideIn 1s ease-out;
+  }
+  */
+  
+  /* New or updated: .header-text to keep your text pinned to the left */
+  .header-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Ensure all text stays left-aligned */
+    text-align: left;
+    margin-right: auto; 
+    /* If you’d like a background behind your text, uncomment:
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    padding: 1rem;
+    */
+  }
+  
+  @keyframes slideIn {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  /* Title, paragraph, etc. */
+  .home-header h1 {
+    font-size: 100px;
+    margin-bottom: 1rem;
+    text-shadow: 1px 8px 15px grey;
+    animation: slideIn 1s ease-out;
+  }
+  
+  .home-header p {
+    font-size: 30px;
+    margin-bottom: 2rem;
+    text-shadow: 1px 5px 2px grey;
+    animation: slideIn 1s ease-out;
+  }
+  
+  /* Rounder, pill-shaped button with shadow */
+  .get-started-btn {
+    background-color: #00b894;
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    border-radius: 50px; /* Larger radius for a more “pill” shape */
+    cursor: pointer;
+    animation: slideIn 1s ease-out;
+  
+    /* Subtle box-shadow for depth */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  }
+  
+  .get-started-btn:hover {
+    background-color: #019874;
+    /* Optionally deepen the shadow on hover */
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+  }
+  
+  /* Right-side boxes */
+  .boxes-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    position: relative;
+  }
+  
+  .box {
+    background: rgba(0, 0, 0, 0.292);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: left;
+    color: #000;
+    position: relative;
+    animation: slideIn 1s ease-out;
+  }
+  
+  @keyframes slideIn2 {
+    from {
+      transform: translateX(-50%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  .box:nth-child(1) {
+    top: 0; 
+    right: 50%; 
+  }
+  
+  .box:nth-child(2) {
+    top: 1rem; 
+    left: 20%; 
+  }
+  
+  .box-image {
+    max-width: 200px;
+    margin-bottom: 1rem;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .learn-more-btn {
+    background-color: #00b894;
+    color: #ffffff;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    border-radius: 50px;    cursor: pointer;
+    display: block; 
+    margin: 0 auto; /* Centers the button in the box */
+    
+  }
+
+
+
+  
+  .learn-more-btn:hover {
+    background-color: #019874;
+  }
+  
+  .box:hover {
+    background-color: #1c28256b;
+  }
+  
+  .welcome-text {
+    font-size: 50px; 
+    margin-bottom: 1rem;
+    color: white;
+  }
+  
+  /* Media queries for responsiveness */
+  @media (max-width: 768px) {
+    .home-header {
+      padding: 2rem 1rem;
+      flex-direction: column; /* Stack elements for smaller screens */
+      align-items: flex-start; /* Keep text on the left */
+    }
+  
+    .home-header h1 {
+      font-size: 2.5rem;
+    }
+  
+    .home-header p {
+      font-size: 1.2rem;
+    }
+  
+    .get-started-btn {
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 30px;
+    }
+  
+    .boxes-wrapper {
+      width: 100%;
+      margin-top: 2rem;
+    }
+  
+    .box {
+      margin: 1rem 0;
+    }
+  
+    .box-image {
+      max-width: 100%;
+    }
+  
+    .welcome-text {
+      font-size: 2rem; 
+    }
+  }
+  
