@@ -6,6 +6,7 @@ from flask import Flask, jsonify, request, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from sqlalchemy.dialects.sqlite import JSON  # works on SQLite ≥3.38
+from sqlalchemy import func
 # If your SQLite is older, store JSON as Text and json.dumps/loads manually.
 
 from ndc_service import get_drug_info_by_ndc   # <- the helper above
@@ -20,10 +21,10 @@ CORS(app)
 # ----------  NEW MODEL  ----------
 class Medicine(db.Model):
     # pharamacy info
-    product_ndc = db.Column(db.String(20), primary_key=True)
+    product_ndc = db.Column(db.String(20), nullable=False)
     pharmacy_name = db.Column(db.String(120), nullable=False)
     address = db.Column(db.String(250), nullable=False)  # <-- new field
-    pharmacy_id = db.Column(db.String(250), nullable=False)
+    unique_id = db.Column(db.String(250), primary_key=True)
     price = db.Column(db.Numeric(10, 2), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
     pharmacy_expiration = db.Column(db.Date, nullable=False)
@@ -47,7 +48,7 @@ class Medicine(db.Model):
             "product_ndc":          self.product_ndc,
             "pharmacy_name":        self.pharmacy_name,
             "address":              self.address,
-            "pharmacy_id":          self.pharmacy_id,
+            "unique_id":           self.unique_id,
             "price":                str(self.price),
             "quantity":             self.quantity,                 # typo fixed
             "pharmacy_expiration":  self.pharmacy_expiration.isoformat(),
@@ -93,7 +94,6 @@ def create_medicine():
         price = Decimal(str(data["price"]))
         pharmacy_expiration = date.fromisoformat(data["pharmacy_expiration"])
         product_ndc = data["product_ndc"].strip()
-        pharmacy_id = data["pharmacy_id"].strip()
         created_at = datetime.utcnow()
     except (KeyError, ValueError) as exc:
         abort(400, description=f"Invalid payload: {exc}")
@@ -101,6 +101,10 @@ def create_medicine():
     ndc_info = get_drug_info_by_ndc(product_ndc)
     if ndc_info is None:
         abort(404, description="No open‑FDA record found for that NDC")
+
+    # Create a unique ID by combining product_ndc and pharmacy address
+    # Remove spaces and special characters to ensure consistency
+    unique_id = f"{product_ndc}_{address.lower().replace(' ', '_').replace(',', '').replace('.', '')}"
 
     # Helpers to flatten lists or nested structures into simple strings
     def csv_or_none(seq: list[str] | None) -> str | None:
@@ -121,7 +125,7 @@ def create_medicine():
         product_ndc = product_ndc,
         pharmacy_name = pharmacy_name,
         address = address,
-        pharmacy_id = pharmacy_id,
+        unique_id = unique_id,
         price = price,
         quantity = quantity,
         pharmacy_expiration = pharmacy_expiration,
@@ -148,6 +152,20 @@ def delete_medicine(med_id):
     db.session.delete(med)
     db.session.commit()
     return "", 204
+
+@app.route("/medicines/query")
+def query_medicines():
+
+    term = request.args.get("name", "").strip()
+    if not term:
+        abort(400, description="Query string ?name= is required")
+
+    # Perform a case-insensitive exact match by converting both sides to lower case.
+    matches = Medicine.query.filter(
+        func.lower(Medicine.generic_name) == term.lower()
+    ).all()
+
+    return jsonify([m.to_dict() for m in matches])
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -6,11 +6,9 @@ const NavBar = () => {
     <nav className="navbar">
       <div className="navbar-logo">WASTE-not-RX</div>
       <ul className="navbar-links">
-        <li><a href="#home">Home</a></li>
-        <li><a href="#pharmacy">Pharmacy</a></li>
-        <li><a href="#nonprofit">NonProfit</a></li>
-
-        
+        <li><a href="/">Home</a></li>
+        <li><a href="nonprofit">NonProfit</a></li>
+        <li><a href="rx">Rx</a></li>
       </ul>
     </nav>
   );
