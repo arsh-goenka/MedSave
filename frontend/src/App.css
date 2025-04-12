@@ -1,38 +1,3 @@
 .App {
   text-align: center;
 }
-
-.home-header {
-  background: linear-gradient(135deg, #002855, #0078d7);
-  color: white;
-  padding: 4rem 2rem;
-  height: calc(100vh - 64px); /* Full viewport height minus navbar height */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.home-header h1 {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-}
-
-.home-header p {
-  font-size: 1.2rem;
-  margin-bottom: 2rem;
-}
-
-.get-started-btn {
-  background-color: #00b894;
-  color: white;
-  border: none;
-  padding: 0.8rem 1.5rem;
-  font-size: 1rem;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.get-started-btn:hover {
-  background-color: #019874;
-}

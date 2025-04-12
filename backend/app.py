@@ -11,116 +11,138 @@ from sqlalchemy.dialects.sqlite import JSON  # works on SQLite ≥3.38
 from ndc_service import get_drug_info_by_ndc   # <- the helper above
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///todos2.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///Marketplace.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 CORS(app)
 
-# ----------  EXISTING MODEL  ----------
-class Todo(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    task = db.Column(db.String(200), nullable=False)
-    completed = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "task": self.task,
-            "completed": self.completed,
-            "created_at": self.created_at.isoformat(),
-        }
-
 # ----------  NEW MODEL  ----------
 class Medicine(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    # pharamacy info
+    product_ndc = db.Column(db.String(20), primary_key=True)
     pharmacy_name = db.Column(db.String(120), nullable=False)
-    pharmacy_address = db.Column(db.String(250), nullable=False)  # <-- new field
+    address = db.Column(db.String(250), nullable=False)  # <-- new field
+    pharmacy_id = db.Column(db.String(250), nullable=False)
     price = db.Column(db.Numeric(10, 2), nullable=False)
-    expiry_date = db.Column(db.Date, nullable=False)
-    ndc_code = db.Column(db.String(30), nullable=False, unique=True)
-    ndc_info = db.Column(JSON)
+    quantity = db.Column(db.Integer, nullable=False)
+    pharmacy_expiration = db.Column(db.Date, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    #drug info
+    generic_name = db.Column(db.String(250), nullable=False)
+    labeler_name = db.Column(db.String(250), nullable=False)
+    brand_name = db.Column(db.String(250), nullable=False)
+    dosage_form = db.Column(db.String(250), nullable=False)
+    route = db.Column(db.String(250), nullable=False)
+    active_ingredients = db.Column(db.String(250), nullable=False)
+    product_type = db.Column(db.String(250), nullable=False)
+    package_description = db.Column(db.String(250), nullable=False)
+    pharm_class = db.Column(db.String(250), nullable=False)
+    
+    
     def to_dict(self):
         return {
-            "id": self.id,
-            "pharmacy_name": self.pharmacy_name,
-            "pharmacy_address": self.pharmacy_address,
-            "price": str(self.price),
-            "expiry_date": self.expiry_date.isoformat(),
-            "ndc_code": self.ndc_code,
-            "ndc_info": self.ndc_info,
-            "created_at": self.created_at.isoformat(),
+            # pharmacy info
+            "product_ndc":          self.product_ndc,
+            "pharmacy_name":        self.pharmacy_name,
+            "address":              self.address,
+            "pharmacy_id":          self.pharmacy_id,
+            "price":                str(self.price),
+            "quantity":             self.quantity,                 # typo fixed
+            "pharmacy_expiration":  self.pharmacy_expiration.isoformat(),
+            "created_at":           self.created_at.isoformat(),
+
+            # drug info
+            "generic_name":         self.generic_name,
+            "labeler_name":         self.labeler_name,
+            "brand_name":           self.brand_name,
+            "dosage_form":          self.dosage_form,
+            "route":                self.route,
+            "active_ingredients":   self.active_ingredients,
+            "product_type":         self.product_type,
+            "package_description":  self.package_description,
+            "pharm_class":          self.pharm_class,
         }
+
 
 with app.app_context():
     db.create_all()
-
-# ----------  TODO ENDPOINTS (unchanged)  ----------
-@app.route("/todos", methods=["GET"])
-def get_todos():
-    return jsonify([t.to_dict() for t in Todo.query.all()])
-
-@app.route("/todos", methods=["POST"])
-def create_todo():
-    data = request.get_json(force=True)
-    new_todo = Todo(task=data["task"])
-    db.session.add(new_todo)
-    db.session.commit()
-    return jsonify(new_todo.to_dict()), 201
-
-@app.route("/todos/<int:todo_id>", methods=["PUT"])
-def update_todo(todo_id):
-    data = request.get_json(force=True)
-    todo = Todo.query.get_or_404(todo_id)
-    todo.task = data.get("task", todo.task)
-    todo.completed = data.get("completed", todo.completed)
-    db.session.commit()
-    return jsonify(todo.to_dict())
-
-@app.route("/todos/<int:todo_id>", methods=["DELETE"])
-def delete_todo(todo_id):
-    todo = Todo.query.get_or_404(todo_id)
-    db.session.delete(todo)
-    db.session.commit()
-    return "", 204
 
 # ----------  MEDICINE ENDPOINTS  ----------
 @app.route("/medicines", methods=["GET"])
 def list_medicines():
     return jsonify([m.to_dict() for m in Medicine.query.all()])
 
+@app.route("/medicines/<string:product_ndc>", methods=["GET"])
+def get_medicine(product_ndc):
+    print("first")
+    med = db.session.get(Medicine, product_ndc)
+    print("second")
+    if med is None:
+        abort(404, description="Medicine not found")
+    return jsonify(med.to_dict())
+
 @app.route("/medicines", methods=["POST"])
 def create_medicine():
     data = request.get_json(force=True)
     try:
         pharmacy_name = data["pharmacy_name"].strip()
-        pharmacy_address = data["pharmacy_address"].strip()  # <-- new
+        quantity = int(data["quantity"].strip())
+        address = data["address"].strip()  
         price = Decimal(str(data["price"]))
-        expiry_date = date.fromisoformat(data["expiry_date"])
-        ndc_code = data["ndc_code"].strip()
+        pharmacy_expiration = date.fromisoformat(data["pharmacy_expiration"])
+        product_ndc = data["product_ndc"].strip()
+        pharmacy_id = data["pharmacy_id"].strip()
+        created_at = datetime.utcnow()
     except (KeyError, ValueError) as exc:
         abort(400, description=f"Invalid payload: {exc}")
 
-    ndc_info = get_drug_info_by_ndc(ndc_code)
+    ndc_info = get_drug_info_by_ndc(product_ndc)
+    if ndc_info is None:
+        abort(404, description="No open‑FDA record found for that NDC")
+
+    # Helpers to flatten lists or nested structures into simple strings
+    def csv_or_none(seq: list[str] | None) -> str | None:
+        return ", ".join(seq) if seq else None
+
+    def active_ings(ings: list[dict] | None) -> str | None:
+        if not ings:
+            return None
+        return ", ".join(f"{i['name']} {i['strength']}" for i in ings)
+
+    def first_pkg_desc(pkgs: list[dict] | None) -> str | None:
+        return pkgs[0]["description"] if pkgs else None
+
     if ndc_info is None:
         abort(404, description="No open‑FDA record found for that NDC")
 
     medicine = Medicine(
-        pharmacy_name=pharmacy_name,
-        pharmacy_address=pharmacy_address,  # <-- new
-        price=price,
-        expiry_date=expiry_date,
-        ndc_code=ndc_code,
-        ndc_info=ndc_info,
+        product_ndc = product_ndc,
+        pharmacy_name = pharmacy_name,
+        address = address,
+        pharmacy_id = pharmacy_id,
+        price = price,
+        quantity = quantity,
+        pharmacy_expiration = pharmacy_expiration,
+        created_at = datetime.utcnow(),
+
+        # drug columns (all come from open‑FDA)
+        generic_name = ndc_info.get("generic_name"),
+        labeler_name = ndc_info.get("labeler_name"),
+        brand_name = ndc_info.get("brand_name"),
+        dosage_form = ndc_info.get("dosage_form"),
+        route = csv_or_none(ndc_info.get("route")),
+        active_ingredients = active_ings(ndc_info.get("active_ingredients")),
+        product_type = ndc_info.get("product_type"),
+        package_description = first_pkg_desc(ndc_info.get("packaging")),
+        pharm_class = csv_or_none(ndc_info.get("pharm_class")),
     )
     db.session.add(medicine)
     db.session.commit()
     return jsonify(medicine.to_dict()), 201
 
-@app.route("/medicines/<int:med_id>", methods=["DELETE"])
+@app.route("/medicines/<string:product_ndc>", methods=["DELETE"])
 def delete_medicine(med_id):
     med = Medicine.query.get_or_404(med_id)
     db.session.delete(med)
