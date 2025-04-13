@@ -78,10 +78,10 @@ const Rx = () => {
     };
   
     return (
-        <div className="py-3">
-      <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+        <div className="py-3  nonprofit-container">
+      <div className="w-full max-w-lg max-h-lg mx-auto bg-white rounded-lg shadow-md p-4">
         <h2 className="text-2xl font-bold text-blue-800 mb-6">Prescription Information</h2>
-        
+      
         {success && (
           <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4">
             Prescription data successfully submitted!
@@ -98,17 +98,15 @@ const Rx = () => {
         {/** This is the code for the submit form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div> {/** This is the div for name of pharmacy*/}
-            <label htmlFor="pharmacy_name" className="block text-sm font-medium text-gray-700 mb-1">
-              Pharmacy Name
-            </label>
             <div className="flex justify-center items-center">
             <input 
               type="text"
               id="pharmacy_name"
               name="pharmacy_name"
+              placeholder="Pharmacy Name"
               value={formData.pharmacy_name}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg placeholder-gray-400 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
               required
             /></div>
           </div>
@@ -127,72 +125,67 @@ const Rx = () => {
               required
             />
           </div>*/}
-          <AddressSearch onAddressSelect={handleAddressSelect}/>
+          <div>
+            <AddressSearch onAddressSelect={handleAddressSelect}/>
+          </div>
+
           <div> {/** This is the div for the NDC */}
-            <label htmlFor="product_ndc" className="block text-sm font-medium text-gray-700 mb-1">
-              Product NDC
-            </label>
             <div className="flex justify-center items-center">
             <input
               type="text"
               id="product_ndc"
+              placeholder="Product NDC"
               name="product_ndc"
               value={formData.product_ndc}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg placeholder-gray-400 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
               required
             /></div>
           </div>
           
           <div className="grid grid-cols-2 gap-4"> {/** div for both Quantity and Price */}
             <div> {/**  */}
-              <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">
-                Quantity
-              </label>
               <div className="flex justify-center items-center">
               <input
                 type="number"
                 id="quantity"
                 name="quantity"
+                placeholder="Quantity"
                 value={formData.quantity}
                 onChange={handleChange}
                 min="1"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg placeholder-gray-400 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 required
               /></div>
             </div>
             
             <div>
-              <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
-                Price ($)
-              </label>
               <div className="flex justify-center items-center">
               <input
                 type="number"
                 id="price"
                 name="price"
+                placeholder="Price ($)"
                 value={formData.price}
                 onChange={handleChange}
                 min="0.01"
                 step="0.01"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg placeholder-gray-400 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
                 required
               /></div>
             </div>
           </div>
           
           <div> {/** div for expiration date */}
-            <label htmlFor="pharmacy_expiration" className="block text-sm font-medium text-gray-700 mb-1">
-              Expiration Date
-            </label>
             <div className="flex justify-center items-center">
             <input
               type="date"
               id="pharmacy_expiration"
               name="pharmacy_expiration"
+              placeholder="Expiration Date"
               value={formData.pharmacy_expiration}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg placeholder-gray-400 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
               required
             /></div>
           </div>

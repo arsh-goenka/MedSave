@@ -1,45 +1,67 @@
 from datetime import datetime, date
 import json
 from decimal import Decimal
+import os
 
-from flask import Flask, jsonify, request, abort
+from flask import Flask, jsonify, request, abort, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from sqlalchemy.dialects.sqlite import JSON  # works on SQLite ≥3.38
 from sqlalchemy import func
-# If your SQLite is older, store JSON as Text and json.dumps/loads manually.
 
-from ndc_service import get_drug_info_by_ndc   # <- the helper above
+# Import Flask-Dance for Google OAuth
+from flask_dance.contrib.google import make_google_blueprint, google
+
+from ndc_service import get_drug_info_by_ndc  # <- the helper above
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///Marketplace.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+# Set a secret key; in production, set this as an environment variable.
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "supersekrit")
 db = SQLAlchemy(app)
 
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})  # Allow frontend origin
 
-# ----------  NEW MODEL  ----------
+# ----------------------- User Model -----------------------
+class User(db.Model):
+    unique_id = db.Column(db.String(250), primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    name = db.Column(db.String(120), nullable=False)
+    role = db.Column(db.String(50), nullable=False)
+    address = db.Column(db.String(250), nullable=False)
+
+    def to_dict(self):
+        return {
+            "unique_id": self.unique_id,
+            "email": self.email,
+            "name": self.name,
+            "role": self.role,
+            "address": self.address,
+        }
+
+# ----------------------- Medicine Model -----------------------
 class Medicine(db.Model):
     # pharamacy info
-    product_ndc = db.Column(db.String(20), nullable=False)
-    pharmacy_name = db.Column(db.String(120), nullable=False)
-    address = db.Column(db.String(250), nullable=False)  # <-- new field
+    product_ndc = db.Column(db.String(20), nullable=True)
+    pharmacy_name = db.Column(db.String(120), nullable=True)
+    address = db.Column(db.String(250), nullable=True)  # <-- new field
     unique_id = db.Column(db.String(250), primary_key=True)
-    price = db.Column(db.Numeric(10, 2), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
-    pharmacy_expiration = db.Column(db.Date, nullable=False)
+    price = db.Column(db.Numeric(10, 2), nullable=True)
+    quantity = db.Column(db.Integer, nullable=True)
+    pharmacy_expiration = db.Column(db.Date, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     #drug info
-    generic_name = db.Column(db.String(250), nullable=False)
-    labeler_name = db.Column(db.String(250), nullable=False)
-    brand_name = db.Column(db.String(250), nullable=False)
-    dosage_form = db.Column(db.String(250), nullable=False)
-    route = db.Column(db.String(250), nullable=False)
-    active_ingredients = db.Column(db.String(250), nullable=False)
-    product_type = db.Column(db.String(250), nullable=False)
-    package_description = db.Column(db.String(250), nullable=False)
-    pharm_class = db.Column(db.String(250), nullable=False)
+    generic_name = db.Column(db.String(250), nullable=True)
+    labeler_name = db.Column(db.String(250), nullable=True)
+    brand_name = db.Column(db.String(250), nullable=True)
+    dosage_form = db.Column(db.String(250), nullable=True)
+    route = db.Column(db.String(250), nullable=True)
+    active_ingredients = db.Column(db.String(250), nullable=True)
+    product_type = db.Column(db.String(250), nullable=True)
+    package_description = db.Column(db.String(250), nullable=True)
+    pharm_class = db.Column(db.String(250), nullable=True)
     
     
     def to_dict(self):
@@ -69,6 +91,66 @@ class Medicine(db.Model):
 
 with app.app_context():
     db.create_all()
+
+# google login endpoint
+@app.route("/google_login", methods=["POST", "OPTIONS"])
+def test_google_login():
+    if request.method == "OPTIONS":
+        # Handle CORS preflight request
+        return jsonify({"message": "CORS preflight check successful"}), 200
+
+    try:
+        data = request.get_json(force=True)
+        print("Received data:", data)  # Log the received data for debugging
+
+        # Validate required fields
+        google_unique_id = data.get("unique_id")
+        if not google_unique_id:
+            abort(400, description="Missing required field: unique_id in the request payload")
+
+        email = data.get("email")
+        if not email:
+            abort(400, description="Missing required field: email in the request payload")
+
+        name = data.get("name")
+        if not name:
+            abort(400, description="Missing required field: name in the request payload")
+
+        role = data.get("role")
+        if not role:
+            abort(400, description="Missing required field: role in the request payload")
+
+        address = data.get("address")
+        if not address:
+            abort(400, description="Missing required field: address in the request payload")
+
+        # Fetch user by email
+        user = User.query.filter_by(email=email).first()
+        if user is None:
+            # Create a new user if not found
+            user = User(
+                unique_id=google_unique_id,
+                email=email,
+                name=name,
+                role=role,
+                address=address,
+            )
+            db.session.add(user)
+        else:
+            # Only update the unique_id, keep other fields intact
+            user.unique_id = google_unique_id
+
+        try:
+            db.session.commit()
+            print("User successfully added/updated in the database.")
+            return jsonify({"message": "User successfully authenticated", "user": user.to_dict()})
+        except Exception as e:
+            print(f"Database error: {e}")
+            db.session.rollback()
+            abort(500, description="Internal Server Error: Could not update user in the database.")
+    except Exception as e:
+        print(f"Error in /google_login: {e}")
+        abort(500, description="Internal Server Error: An unexpected error occurred")
 
 # ----------  MEDICINE ENDPOINTS  ----------
 @app.route("/medicines", methods=["GET"])

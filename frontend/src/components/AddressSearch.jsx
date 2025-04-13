@@ -72,17 +72,18 @@ export default function AddressSearch({ onAddressSelect }) {
   }, []);
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <label htmlFor="Pharmacy Address" className="block text-sm font-medium text-gray-700 mb-1">
+    <div className="w-full max-w-lg mx-auto">
+      {/*<label htmlFor="Pharmacy Address" className="block text-sm font-medium text-gray-700 mb-1">
         Pharmacy Address
-      </label>
+      </label>*/}
       
-      <div className="relative">
+      <div className="w-full relative flex justify-center">
         <input
           type="text"
           id="address"
           name="address"
-          className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+          //className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+          className='w-full py-2 border border-gray-300 rounded-lg placeholder-gray-400 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition'
           placeholder="Start typing an address..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -102,7 +103,9 @@ export default function AddressSearch({ onAddressSelect }) {
           <ul 
             id="suggestions-list"
             ref={suggestionListRef}
-            className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md overflow-auto border border-gray-300 py-1 list-none p-0"
+            //style={{ top: 'calc(100% + 8px)' }}
+            //className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md overflow-auto border border-gray-300 py-1 list-none p-0"
+            className="absolute z-10 top-full mt-1 sm:mt-2 md:mt-3 w-full bg-white shadow-lg max-h-60 rounded-md overflow-auto border border-gray-300 py-1 list-none p-0"
             role="listbox"
           >
             {suggestions.map((suggestion) => (
