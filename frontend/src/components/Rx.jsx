@@ -80,11 +80,11 @@ const Rx = () => {
     return (
         <div className="py-3  nonprofit-container">
       <div className="w-full max-w-lg max-h-lg mx-auto bg-white rounded-lg shadow-md p-4">
-        <h2 className="text-2xl font-bold text-blue-800 mb-6">Prescription Information</h2>
+        <h2 className="text-2xl font-bold text-blue-800 mb-6">Medicine Information</h2>
       
         {success && (
           <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4">
-            Prescription data successfully submitted!
+            Medicine data successfully submitted!
           </div>
         )}
         
@@ -206,7 +206,7 @@ const Rx = () => {
             ) : (
               <>
                 <Send size={18} className="mr-2" />
-                Submit Prescription
+                Submit Medicine
               </>
             )}
           </button>

@@ -6,6 +6,7 @@ import Rx from './components/Rx';
 import NonProfit from './components/NonProfit.jsx'
 import AddressSearch from './components/AddressSearch.jsx';
 import Home from './components/Home.jsx';
+import About from './components/About.jsx';
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './components/Login.jsx'; // import your page
@@ -90,6 +91,7 @@ function App() {
           } />
           <Route path="/nonprofit" element={<NonProfit />} />
           <Route path="/rx" element={<Rx />} />
+          <Route path="/about" element={<About />} />
         </Routes>
       </div>
     </Router>

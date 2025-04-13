@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
 import About from './About';
 
 const Home = ({ profile }) => {
   const navigate = useNavigate();
+  const aboutRef = useRef(null);
 
   return (
     <div className="App">
