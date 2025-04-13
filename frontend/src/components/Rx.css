@@ -1,17 +1,24 @@
 /* Rx.css */
+
 .max-w-md {
     max-width: 28rem;
 }
-  
+.nonprofit-container {
+
+  background: linear-gradient(-230deg, #002855, #0078d7, #00b894);
+}
 .mx-auto {
     margin-left: auto;
     margin-right: auto;
-    margin-top: auto;
-    margin-bottom: auto;
+    margin-top: auto; 
+    margin-bottom: auto; 
 }
   
   .bg-white {
+    
     background-color: white;
+    
+    /*background: linear-gradient(-230deg, #002855, #0078d7, #00b894);*/
   }
   
   .rounded-lg {
@@ -45,6 +52,7 @@
   
   .bg-green-100 {
     background-color: #d1fae5;
+    background: linear-gradient(-230deg, #002855, #0078d7, #00b894);
   }
   
   .border-l-4 {
@@ -229,3 +237,4 @@
   .opacity-75 {
     opacity: 0.75;
   }
+  
