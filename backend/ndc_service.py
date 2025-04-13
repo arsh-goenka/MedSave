@@ -1,9 +1,10 @@
 # backend/ndc_service.py
 import requests
+from typing import Union
 
 FDA_NDC_URL = "https://api.fda.gov/drug/ndc.json"
 
-def get_drug_info_by_ndc(ndc_code: str) -> dict | None:
+def get_drug_info_by_ndc(ndc_code: str) -> Union[dict, None]:
     """
     Hit the open‑FDA NDC endpoint and return the *product‑level* record.
     If given a package NDC (e.g., "12345-6789-01"), strips the package segment.

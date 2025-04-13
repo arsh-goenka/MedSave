@@ -23,13 +23,17 @@ db = SQLAlchemy(app)
 
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})  # Allow frontend origin
 
+with app.app_context():
+    db.drop_all()  # Clears the existing database tables
+    db.create_all()  # Creates tables based on your current models
+
 # ----------------------- User Model -----------------------
 class User(db.Model):
     unique_id = db.Column(db.String(250), primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    name = db.Column(db.String(120), nullable=False)
-    role = db.Column(db.String(50), nullable=False)
-    address = db.Column(db.String(250), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=True)
+    name = db.Column(db.String(120), nullable=True)
+    role = db.Column(db.String(50), nullable=True)
+    address = db.Column(db.String(250), nullable=True)
 
     def to_dict(self):
         return {
@@ -43,25 +47,25 @@ class User(db.Model):
 # ----------------------- Medicine Model -----------------------
 class Medicine(db.Model):
     # pharamacy info
-    product_ndc = db.Column(db.String(20), nullable=False)
-    pharmacy_name = db.Column(db.String(120), nullable=False)
-    address = db.Column(db.String(250), nullable=False)  # <-- new field
+    product_ndc = db.Column(db.String(20), nullable=True)
+    pharmacy_name = db.Column(db.String(120), nullable=True)
+    address = db.Column(db.String(250), nullable=True)  # <-- new field
     unique_id = db.Column(db.String(250), primary_key=True)
-    price = db.Column(db.Numeric(10, 2), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
-    pharmacy_expiration = db.Column(db.Date, nullable=False)
+    price = db.Column(db.Numeric(10, 2), nullable=True)
+    quantity = db.Column(db.Integer, nullable=True)
+    pharmacy_expiration = db.Column(db.Date, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     #drug info
-    generic_name = db.Column(db.String(250), nullable=False)
-    labeler_name = db.Column(db.String(250), nullable=False)
-    brand_name = db.Column(db.String(250), nullable=False)
-    dosage_form = db.Column(db.String(250), nullable=False)
-    route = db.Column(db.String(250), nullable=False)
-    active_ingredients = db.Column(db.String(250), nullable=False)
-    product_type = db.Column(db.String(250), nullable=False)
-    package_description = db.Column(db.String(250), nullable=False)
-    pharm_class = db.Column(db.String(250), nullable=False)
+    generic_name = db.Column(db.String(250), nullable=True)
+    labeler_name = db.Column(db.String(250), nullable=True)
+    brand_name = db.Column(db.String(250), nullable=True)
+    dosage_form = db.Column(db.String(250), nullable=True)
+    route = db.Column(db.String(250), nullable=True)
+    active_ingredients = db.Column(db.String(250), nullable=True)
+    product_type = db.Column(db.String(250), nullable=True)
+    package_description = db.Column(db.String(250), nullable=True)
+    pharm_class = db.Column(db.String(250), nullable=True)
     
     
     def to_dict(self):
