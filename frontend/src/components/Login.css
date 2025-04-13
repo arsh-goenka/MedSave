@@ -8,6 +8,12 @@
     padding: 2rem;
   }
   
+.auto-address {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
   .auth-card {
     background-color: white;
     border-radius: 16px;

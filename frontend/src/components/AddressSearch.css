@@ -18,6 +18,9 @@
 .px-4 { padding-left: 1rem; padding-right: 1rem; }
 .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
 .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+.top-full {
+  top: 100%;
+}
 
 /* Typography */
 .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
@@ -59,10 +62,12 @@
 .flex-shrink-0 { flex-shrink: 0; }
 .items-start { align-items: flex-start; }
 .max-h-60 { max-height: 15rem; }
+.max-w-lg { max-width: 32rem; }
 .overflow-auto { overflow: auto; }
 .list-none {
     list-style-type: none;
 }
+.justify-center { justify-content: center; }
 
 /* Interactive */
 .cursor-pointer { cursor: pointer; }
@@ -72,4 +77,14 @@
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+@media (min-width: 640px) {
+  .sm\:mt-2 {
+    margin-top: 0.5rem; /* 8px */
+  }
+}
+@media (min-width: 768px) {
+  .md\:mt-3 {
+    margin-top: 0.75rem; /* 12px */
+  }
 }

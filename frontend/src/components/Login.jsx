@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AddressSearch from './AddressSearch';
 import './Login.css';
 
 const Login = ({ onLogin, onSignup, setUserDetails }) => {
@@ -15,6 +16,13 @@ const Login = ({ onLogin, onSignup, setUserDetails }) => {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleAddressSelect = (address) => {
+    setFormData(prevData => ({
+      ...prevData,
+      address: address
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -65,14 +73,17 @@ const Login = ({ onLogin, onSignup, setUserDetails }) => {
                 onChange={handleChange}
                 required
               />
-              <input
+              {/*<div><input
                 type="text"
                 name="address"
                 placeholder="Address"
                 value={formData.address}
                 onChange={handleChange}
                 required
-              />
+          /></div>*/}
+              <div className='auto-address'>
+                <AddressSearch onAddressSelect={handleAddressSelect}/>
+              </div>
               <div className="role-select">
                 <label>
                   <input
