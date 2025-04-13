@@ -10,6 +10,8 @@ import Login from './components/Login.jsx'; // import your page
 
 
 function App() {
+  const [userDetails, setUserDetails] = useState({ name: '', role: '', address: '' }); // State for user-provided data
+
   const handleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
@@ -18,11 +20,11 @@ function App() {
         });
 
         const data = {
-          id: userInfo.data.sub, // Google's unique user ID
-          email: userInfo.data.email,
-          name: userInfo.data.name,
-          role: 'non_profit', // Default role; adjust as needed
-          address: 'Default Address', // Placeholder; adjust as needed
+          unique_id: userInfo.data.sub, // From Google API
+          email: userInfo.data.email,   // From Google API
+          name: userDetails.name,       // From frontend input
+          role: userDetails.role,       // From frontend input
+          address: userDetails.address, // From frontend input
         };
 
         fetch("http://127.0.0.1:5000/google_login", {
@@ -30,9 +32,16 @@ function App() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
         })
-          .then(res => res.json())
-          .then(res => console.log("Login success:", res))
-          .catch(err => console.error("Login failed:", err));
+        .then(async (res) => {
+          if (!res.ok) {
+            const errorText = await res.text();
+            console.error("Server error response:", errorText);
+            throw new Error(`Server responded with status ${res.status}`);
+          }
+          return res.json();
+        })
+        .then(res => console.log("Login success:", res))
+        .catch(err => console.error("Login failed:", err));
       } catch (error) {
         console.error("Error fetching Google user info:", error);
       }
@@ -68,6 +77,8 @@ function App() {
             <Login
               onLogin={handleLogin}
               onSignup={handleLogin}
+              setUserDetails={setUserDetails} // Pass setUserDetails to Login component
+
             />
           } />
           <Route path="/nonprofit" element={<div>NonProfit Page</div>} />

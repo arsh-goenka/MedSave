@@ -90,17 +90,21 @@ with app.app_context():
     db.create_all()
 
 # google login endpoint
-@app.route("/google_login", methods=["POST"])
+@app.route("/google_login", methods=["POST", "OPTIONS"])
 def test_google_login():
+    if request.method == "OPTIONS":
+        # Handle CORS preflight request
+        return jsonify({"message": "CORS preflight check successful"}), 200
+
     try:
         data = request.get_json(force=True)
         google_unique_id = data.get("unique_id")
         if not google_unique_id:
-            abort(400, description="Missing required field: unique_id")
+            abort(400, description="Missing required field: unique_id in the request payload")
 
         email = data.get("email")
         if not email:
-            abort(400, description="Missing required field: email")
+            abort(400, description="Missing required field: email in the request payload")
 
         # Fetch user by email
         user = User.query.filter_by(email=email).first()
@@ -121,15 +125,14 @@ def test_google_login():
         try:
             db.session.commit()
             print("User successfully added/updated in the database.")
+            return jsonify({"message": "User successfully authenticated", "user": user.to_dict()})
         except Exception as e:
             print(f"Database error: {e}")
             db.session.rollback()
             abort(500, description="Internal Server Error: Could not update user in the database.")
-
-        return jsonify({"message": "User successfully authenticated", "user": user.to_dict()})
     except Exception as e:
         print(f"Error in /google_login: {e}")
-        abort(500, description="Internal Server Error")
+        abort(500, description="Internal Server Error: An unexpected error occurred")
 
 # ----------------------- Medicine Endpoints -----------------------
 @app.route("/medicines", methods=["GET"])

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Login.css';
 
-const Login = ({ onLogin, onSignup }) => {
+const Login = ({ onLogin, onSignup, setUserDetails }) => {
   const [isSignup, setIsSignup] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
@@ -19,8 +19,9 @@ const Login = ({ onLogin, onSignup }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = isSignup ? await onSignup(formData) : await onLogin(formData);
+    setUserDetails({ name: formData.name, role: formData.role, address: formData.address }); // Update user details
 
+    const res = isSignup ? await onSignup(formData) : await onLogin();
     if (isSignup) {
       const rolePath = formData.role === 'pharmacy' ? '/rx' : '/nonprofit';
       navigate(rolePath);
