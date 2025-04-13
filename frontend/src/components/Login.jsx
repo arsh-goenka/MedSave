@@ -19,7 +19,12 @@ const Login = ({ onLogin, onSignup, setUserDetails }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setUserDetails({ name: formData.name, role: formData.role, address: formData.address }); // Update user details
+    setUserDetails({
+      name: formData.name,
+      role: formData.role,
+      address: formData.address,
+      email: formData.email, // Include email from frontend input
+    });
 
     const res = isSignup ? await onSignup(formData) : await onLogin();
     if (isSignup) {

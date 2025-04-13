@@ -101,6 +101,9 @@ def test_google_login():
 
     try:
         data = request.get_json(force=True)
+        print("Received data:", data)  # Log the received data for debugging
+
+        # Validate required fields
         google_unique_id = data.get("unique_id")
         if not google_unique_id:
             abort(400, description="Missing required field: unique_id in the request payload")
@@ -109,6 +112,18 @@ def test_google_login():
         if not email:
             abort(400, description="Missing required field: email in the request payload")
 
+        name = data.get("name")
+        if not name:
+            abort(400, description="Missing required field: name in the request payload")
+
+        role = data.get("role")
+        if not role:
+            abort(400, description="Missing required field: role in the request payload")
+
+        address = data.get("address")
+        if not address:
+            abort(400, description="Missing required field: address in the request payload")
+
         # Fetch user by email
         user = User.query.filter_by(email=email).first()
         if user is None:
@@ -116,9 +131,9 @@ def test_google_login():
             user = User(
                 unique_id=google_unique_id,
                 email=email,
-                name=data.get("name"),
-                role=data.get("role"),
-                address=data.get("address"),
+                name=name,
+                role=role,
+                address=address,
             )
             db.session.add(user)
         else:

@@ -12,18 +12,23 @@ import Login from './components/Login.jsx'; // import your page
 
 
 function App() {
-  const [userDetails, setUserDetails] = useState({ name: '', role: '', address: '' }); // State for user-provided data
+  const [userDetails, setUserDetails] = useState({ name: '', role: '', address: '', email: '' }); // State for user-provided data
 
   const handleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
+        if (!userDetails.name || !userDetails.role || !userDetails.address || !userDetails.email) {
+          console.error("User details are incomplete:", userDetails);
+          throw new Error("User details (name, role, address, email) must be provided.");
+        }
+
         const userInfo = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
           headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
         });
 
         const data = {
           unique_id: userInfo.data.sub, // From Google API
-          email: userInfo.data.email,   // From Google API
+          email: userDetails.email,     // From frontend input
           name: userDetails.name,       // From frontend input
           role: userDetails.role,       // From frontend input
           address: userDetails.address, // From frontend input
@@ -45,7 +50,7 @@ function App() {
         .then(res => console.log("Login success:", res))
         .catch(err => console.error("Login failed:", err));
       } catch (error) {
-        console.error("Error fetching Google user info:", error);
+        console.error("Error during login:", error);
       }
     },
     onError: (error) => console.error("Google login failed:", error),
