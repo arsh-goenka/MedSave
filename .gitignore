@@ -1757,3 +1757,4 @@ venv/bin/activate.fish
 venv/bin/activate.csh
 venv/bin/activate
 base/
+backend/__pycache__/
