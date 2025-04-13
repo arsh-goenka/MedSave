@@ -1,59 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import './NonProfit.css'; // styling goes here
-
-/*
-function NonProfit() {
-    return (
-      <main className="nonprofit-container">
-        <div className="nonprofit-card">
-          <h1 className="nonprofit-title">Search For Available Medicine</h1>
-          <form className="nonprofit-form">
-            <input
-              type="text"
-              placeholder="Type a medicine name"
-              aria-label="Search medicine"
-              className="nonprofit-input"
-            />
-            <button type="submit" className="nonprofit-button">
-              Search
-            </button>
-          </form>
-        </div>
-      </main>
-    );
-  }
-  
-  export default NonProfit;
-  */
   function NonProfit() {
     const [query, setQuery] = useState('');
     const [formError, setFormError] = useState('');
     const [results, setResults] = useState(null);
-  
-    // Restore last search from localStorage (optional UX touch)
-    useEffect(() => {
-      const saved = localStorage.getItem('lastSearch');
-      if (saved) setQuery(saved);
-    }, []);
-  
-    const handleChange = (e) => {
+    
+    
+    // Save last search to localStorage (optional UX touch)
+    const handleChange = async (e) => {
       setQuery(e.target.value);
       setFormError('');
     };
   
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => { 
       e.preventDefault();
   
       if (!query.trim()) {
         setFormError('Please enter a valid medicine name.');
         return;
       }
-  
-      // Example logic (replace with real API call if needed)
-      localStorage.setItem('lastSearch', query);
-      setResults(`You searched for "${query}"`);
+      try{
+        const res = await fetch(`http://127.0.0.1:5000/medicines/query?name=${query}`);
+        if (!res.ok) throw new Error('No results found');
+
+        const data = await res.json();
+        setResults(data);
+        setFormError('');
+    } catch (err) {
+        console.error(err);
+        setFormError('Could not find that medicine.');
+        setResults(null);
+    }
+      
     };
-  
+    //button click
     return (
       <main className="nonprofit-container">
         <div className="nonprofit-card search-box">
@@ -81,12 +61,32 @@ function NonProfit() {
               Search
             </button>
           </form>
-  
-          {results && (
-            <p className="text-center mt-4 text-sm text-gray-700">
-              {results}
-            </p>
-          )}
+        {Array.isArray(results) && results.length > 0 && (
+            <div className="search-results">
+                <table className="results-table">
+                <thead>
+                    <tr>
+                    <th>Name</th>
+                    <th>Pharmacy</th>
+                    <th>Location</th>
+                    <th>Price ($)</th>
+                    <th>Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {results.map((med, idx) => (
+                    <tr key={idx}>
+                        <td>{med.generic_name}</td>
+                        <td>{med.pharmacy_name}</td>
+                        <td>{med.address}</td>
+                        <td>{med.price}</td>
+                        <td>{med.quantity}</td>
+                    </tr>
+                    ))}
+                </tbody>
+                </table>
+            </div>
+            )}
         </div>
       </main>
     );
