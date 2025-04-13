@@ -1,42 +1,49 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
+import About from './About';
 
 const Home = ({ profile }) => {
   const navigate = useNavigate();
 
   return (
     <div className="App">
-      <header className="home-header">
-        <div className="header-text">
-          <h1>WASTE-not-Rx</h1>
-          <p>Connecting surplus medicine to communities in need</p>
-          {profile ? (
-            <div>
-              <p>Welcome, {profile.name}!</p>
-              <p>Welcome, {profile.email}!</p>
-              <p>Welcome, {profile.id}!</p>
+      <div className="home-background">
+        <header className="home-header">
+          <div className="header-text">
+            <h1>MedSave</h1>
+            {/* <p>Connecting surplus medicine to communities in need</p> */}
+
+            <div className="stats-overview">
+              <p><strong>MedSave Fighting Drug Waste, Fueling Health Equity</strong></p>
+              {/* <p><strong>5,000+</strong> Medications Saved</p>
+              <p><strong>800+</strong> Patients Helped</p> */}
             </div>
-          ) : (
-            <button className="get-started-btn" onClick={() => navigate('/auth')}>
-              Get Started
-            </button>
-          )}
-        </div>
-        {/* Right side boxes */}
-        <div className="boxes-wrapper">
-          <div className="box" style={{ '--box-index': 0 }}>
-            <img src="sci.png" alt="Logo" className="box-image" />
-            <div className="welcome-text">AI Pharma for Good</div>
-            <button className="learn-more-btn">Learn More</button>
+
+            {profile ? (
+              <div>
+                <p>Welcome, {profile.name}!</p>
+                <p>{profile.email}</p>
+                <p>ID: {profile.id}</p>
+              </div>
+            ) : (
+              <button className="get-started-btn" onClick={() => navigate('/auth')}>Login Here!</button>
+            )}
+
           </div>
 
-          <div className="box" style={{ '--box-index': 1 }}>
-            <img src="pills.png" alt="Logo" className="box-image" />
-            <button className="learn-more-btn">Learn More</button>
+          <div className="boxes-wrapper">
+            <div className="box">
+              <img src="medsafewhite.webp" alt="Scientist" className="box-image" />
+              <div className="welcome-text">Pharma for Good</div>
+              <button className="learn-more-btn" onClick={() => navigate('/about')}>Learn More</button>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+
+        {/* Inline About section below home header */}
+        <About />
+      </div>
     </div>
   );
 };

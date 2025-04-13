@@ -10,18 +10,6 @@
     align-items: flex-start; /* Top-align the items, so your text stays near top left */
   }
   
-  /* Remove or comment out this old .content-box if you're no longer using it */
-  /*
-  .content-box {
-    background: rgba(0, 0, 0, 0.149);
-    padding: 2rem;
-    border-radius: 8px;
-    max-width: 600px;
-    margin-left: 2rem;
-    animation: slideIn 1s ease-out;
-  }
-  */
-  
   /* New or updated: .header-text to keep your text pinned to the left */
   .header-text {
     display: flex;
@@ -115,7 +103,7 @@
   
   .box:nth-child(1) {
     top: 0; 
-    right: 50%; 
+    right: 10%; 
   }
   
   .box:nth-child(2) {
@@ -155,10 +143,12 @@
   }
   
   .welcome-text {
-    font-size: 50px; 
-    margin-bottom: 1rem;
-    color: white;
-  }
+    font-size: 3.2rem; /* Match the font size of the stats-overview text */
+    font-weight: bold; /* Make it bold */
+    color: white; /* Ensure it matches the color */
+    text-align: left; /* Align it to the left */
+    margin-bottom: 1rem; /* Add spacing below */
+}
   
   /* Media queries for responsiveness */
   @media (max-width: 768px) {
