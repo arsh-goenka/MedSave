@@ -21,7 +21,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "supersekrit")
 db = SQLAlchemy(app)
 
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})  # Allow frontend origin
 
 # ----------------------- User Model -----------------------
 class User(db.Model):
@@ -93,39 +93,49 @@ with app.app_context():
     db.create_all()
 
 # google login endpoint
-@app.route("/google_login", methods=["POST"])
+@app.route("/google_login", methods=["POST", "OPTIONS"])
 def test_google_login():
-    data = request.get_json(force=True)
-    # Expect data to include: id, email, name, role, and address.
-    google_unique_id = data.get("id")
-    email = data.get("email")
-    name = data.get("name", "Unknown")
-    role_input = data.get("role", "").lower()
-    role = role_input if role_input in ["pharmacy", "non_profit"] else "non_profit"
-    address = data.get("address", "No address provided")
-    
-    user = User.query.filter_by(email=email).first()
-    if user is None:
-        user = User(
-            unique_id=google_unique_id,
-            email=email,
-            name=name,
-            role=role,
-            address=address
-        )
-        db.session.add(user)
-        db.session.commit()
-    else:
-        user.name = name
-        user.role = role
-        user.address = address
-        db.session.commit()
-    
-    session["user"] = user.to_dict()
-    return jsonify({
-        "message": "Test Google login successful",
-        "user": user.to_dict()
-    })
+    if request.method == "OPTIONS":
+        # Handle CORS preflight request
+        return jsonify({"message": "CORS preflight check successful"}), 200
+
+    try:
+        data = request.get_json(force=True)
+        google_unique_id = data.get("unique_id")
+        if not google_unique_id:
+            abort(400, description="Missing required field: unique_id in the request payload")
+
+        email = data.get("email")
+        if not email:
+            abort(400, description="Missing required field: email in the request payload")
+
+        # Fetch user by email
+        user = User.query.filter_by(email=email).first()
+        if user is None:
+            # Create a new user if not found
+            user = User(
+                unique_id=google_unique_id,
+                email=email,
+                name=data.get("name"),
+                role=data.get("role"),
+                address=data.get("address"),
+            )
+            db.session.add(user)
+        else:
+            # Only update the unique_id, keep other fields intact
+            user.unique_id = google_unique_id
+
+        try:
+            db.session.commit()
+            print("User successfully added/updated in the database.")
+            return jsonify({"message": "User successfully authenticated", "user": user.to_dict()})
+        except Exception as e:
+            print(f"Database error: {e}")
+            db.session.rollback()
+            abort(500, description="Internal Server Error: Could not update user in the database.")
+    except Exception as e:
+        print(f"Error in /google_login: {e}")
+        abort(500, description="Internal Server Error: An unexpected error occurred")
 
 # ----------  MEDICINE ENDPOINTS  ----------
 @app.route("/medicines", methods=["GET"])
