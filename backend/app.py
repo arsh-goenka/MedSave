@@ -1,24 +1,46 @@
 from datetime import datetime, date
 import json
 from decimal import Decimal
+import os
 
-from flask import Flask, jsonify, request, abort
+from flask import Flask, jsonify, request, abort, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from sqlalchemy.dialects.sqlite import JSON  # works on SQLite ≥3.38
 from sqlalchemy import func
-# If your SQLite is older, store JSON as Text and json.dumps/loads manually.
 
-from ndc_service import get_drug_info_by_ndc   # <- the helper above
+# Import Flask-Dance for Google OAuth
+from flask_dance.contrib.google import make_google_blueprint, google
+
+from ndc_service import get_drug_info_by_ndc  # <- the helper above
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///Marketplace.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+# Set a secret key; in production, set this as an environment variable.
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "supersekrit")
 db = SQLAlchemy(app)
 
 CORS(app)
 
-# ----------  NEW MODEL  ----------
+# ----------------------- User Model -----------------------
+class User(db.Model):
+    unique_id = db.Column(db.String(250), primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    name = db.Column(db.String(120), nullable=False)
+    role = db.Column(db.String(50), nullable=False)
+    address = db.Column(db.String(250), nullable=False)
+
+    def to_dict(self):
+        return {
+            "unique_id": self.unique_id,
+            "email": self.email,
+            "name": self.name,
+            "role": self.role,
+            "address": self.address,
+        }
+
+# ----------------------- Medicine Model -----------------------
 class Medicine(db.Model):
     # pharamacy info
     product_ndc = db.Column(db.String(20), nullable=False)
@@ -69,6 +91,41 @@ class Medicine(db.Model):
 
 with app.app_context():
     db.create_all()
+
+# google login endpoint
+@app.route("/google_login", methods=["POST"])
+def test_google_login():
+    data = request.get_json(force=True)
+    # Expect data to include: id, email, name, role, and address.
+    google_unique_id = data.get("id")
+    email = data.get("email")
+    name = data.get("name", "Unknown")
+    role_input = data.get("role", "").lower()
+    role = role_input if role_input in ["pharmacy", "non_profit"] else "non_profit"
+    address = data.get("address", "No address provided")
+    
+    user = User.query.filter_by(email=email).first()
+    if user is None:
+        user = User(
+            unique_id=google_unique_id,
+            email=email,
+            name=name,
+            role=role,
+            address=address
+        )
+        db.session.add(user)
+        db.session.commit()
+    else:
+        user.name = name
+        user.role = role
+        user.address = address
+        db.session.commit()
+    
+    session["user"] = user.to_dict()
+    return jsonify({
+        "message": "Test Google login successful",
+        "user": user.to_dict()
+    })
 
 # ----------  MEDICINE ENDPOINTS  ----------
 @app.route("/medicines", methods=["GET"])
