@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Send, AlertCircle } from 'lucide-react';
+import AddressSearch from './AddressSearch.jsx';
 import './Rx.css'
 
 const Rx = () => {
@@ -24,6 +25,14 @@ const Rx = () => {
         [name]: value
       }));
     };
+
+    const handleAddressSelect = (address) => {
+        setFormData(prevData => ({
+          ...prevData,
+          address: address
+        }));
+      };
+      
   
     const handleSubmit = async (e) => {
       e.preventDefault();
@@ -93,7 +102,8 @@ const Rx = () => {
             <label htmlFor="pharmacy_name" className="block text-sm font-medium text-gray-700 mb-1">
               Pharmacy Name
             </label>
-            <input
+            <div className="flex justify-center items-center">
+            <input 
               type="text"
               id="pharmacy_name"
               name="pharmacy_name"
@@ -101,10 +111,10 @@ const Rx = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
-            />
+            /></div>
           </div>
           
-          <div> {/** This is the div for the address of the pharmacy */}
+          {/**<div> {/** This is the div for the address of the pharmacy 
             <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
               Pharmacy Address
             </label>
@@ -117,12 +127,13 @@ const Rx = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
-          </div>
-          
+          </div>*/}
+          <AddressSearch onAddressSelect={handleAddressSelect}/>
           <div> {/** This is the div for the NDC */}
             <label htmlFor="product_ndc" className="block text-sm font-medium text-gray-700 mb-1">
-              Product_NDC
+              Product NDC
             </label>
+            <div className="flex justify-center items-center">
             <input
               type="text"
               id="product_ndc"
@@ -131,7 +142,7 @@ const Rx = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
-            />
+            /></div>
           </div>
           
           <div className="grid grid-cols-2 gap-4"> {/** div for both Quantity and Price */}
@@ -139,6 +150,7 @@ const Rx = () => {
               <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">
                 Quantity
               </label>
+              <div className="flex justify-center items-center">
               <input
                 type="number"
                 id="quantity"
@@ -148,13 +160,14 @@ const Rx = () => {
                 min="1"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
-              />
+              /></div>
             </div>
             
             <div>
               <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
                 Price ($)
               </label>
+              <div className="flex justify-center items-center">
               <input
                 type="number"
                 id="price"
@@ -165,7 +178,7 @@ const Rx = () => {
                 step="0.01"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
-              />
+              /></div>
             </div>
           </div>
           
@@ -173,6 +186,7 @@ const Rx = () => {
             <label htmlFor="pharmacy_expiration" className="block text-sm font-medium text-gray-700 mb-1">
               Expiration Date
             </label>
+            <div className="flex justify-center items-center">
             <input
               type="date"
               id="pharmacy_expiration"
@@ -181,7 +195,7 @@ const Rx = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
-            />
+            /></div>
           </div>
           
           <button

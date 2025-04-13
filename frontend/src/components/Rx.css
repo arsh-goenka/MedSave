@@ -52,7 +52,7 @@
   
   .bg-green-100 {
     background-color: #d1fae5;
-    background: linear-gradient(-230deg, #002855, #0078d7, #00b894);
+    /*background: linear-gradient(-230deg, #002855, #0078d7, #00b894);*/
   }
   
   .border-l-4 {
