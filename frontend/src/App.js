@@ -3,6 +3,8 @@ import { useGoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
 import NavBar from './components/NavBar';
 import Rx from './components/Rx';
+import NonProfit from './components/NonProfit.jsx'
+import AddressSearch from './components/AddressSearch.jsx';
 import Home from './components/Home.jsx';
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
@@ -81,7 +83,7 @@ function App() {
 
             />
           } />
-          <Route path="/nonprofit" element={<div>NonProfit Page</div>} />
+          <Route path="/nonprofit" element={<NonProfit />} />
           <Route path="/rx" element={<Rx />} />
         </Routes>
       </div>
