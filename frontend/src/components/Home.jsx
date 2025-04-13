@@ -1,19 +1,28 @@
-
-// export default Home;
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Home.css';
 
-const Home = () => {
+const Home = ({ profile }) => {
+  const navigate = useNavigate();
+
   return (
     <div className="App">
       <header className="home-header">
-        {/* Left side content */}
-        <div className="header-text">    
+        <div className="header-text">
           <h1>WASTE-not-Rx</h1>
           <p>Connecting surplus medicine to communities in need</p>
-          <button className="get-started-btn">Get Started</button>
+          {profile ? (
+            <div>
+              <p>Welcome, {profile.name}!</p>
+              <p>Welcome, {profile.email}!</p>
+              <p>Welcome, {profile.id}!</p>
+            </div>
+          ) : (
+            <button className="get-started-btn" onClick={() => navigate('/auth')}>
+              Get Started
+            </button>
+          )}
         </div>
-
         {/* Right side boxes */}
         <div className="boxes-wrapper">
           <div className="box" style={{ '--box-index': 0 }}>
