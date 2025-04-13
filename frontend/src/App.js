@@ -30,6 +30,7 @@ function App() {
         fetch("http://127.0.0.1:5000/google_login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: 'include',
           body: JSON.stringify(data),
         })
         .then(async (res) => {

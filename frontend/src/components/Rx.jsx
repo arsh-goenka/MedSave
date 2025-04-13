@@ -39,6 +39,7 @@ const Rx = () => {
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include', // This ensures cookies are sent with the request
           body: JSON.stringify(formData),
         });
         

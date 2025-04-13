@@ -22,8 +22,14 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "supersekrit")
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=7)  # adjust lifetime as needed
 db = SQLAlchemy(app)
 
-# Configure CORS: allow only http://localhost:3000 and support credentials.
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
+# Configure CORS with specific settings
+CORS(app,
+     resources={r"/*": {
+         "origins": ["http://localhost:3000", "http://127.0.0.1:3000"],
+         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+         "allow_headers": ["Content-Type", "Authorization", "X-Pharmacy-Credentials"],
+         "supports_credentials": True
+     }})
 
 # ----------------------- User Model -----------------------
 class User(db.Model):
