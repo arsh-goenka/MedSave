@@ -20,8 +20,8 @@ const Login = ({ onLogin, onSignup, setUserDetails }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setUserDetails({ name: formData.name, role: formData.role, address: formData.address }); // Update user details
-    const res = isSignup ? await onSignup(formData) : await onLogin(formData);
 
+    const res = isSignup ? await onSignup(formData) : await onLogin();
     if (isSignup) {
       const rolePath = formData.role === 'pharmacy' ? '/rx' : '/nonprofit';
       navigate(rolePath);

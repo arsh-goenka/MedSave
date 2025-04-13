@@ -8,6 +8,7 @@ import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './components/Login.jsx'; // import your page
 
+
 function App() {
   const [userDetails, setUserDetails] = useState({ name: '', role: '', address: '' }); // State for user-provided data
 
@@ -31,16 +32,16 @@ function App() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
         })
-          .then(async (res) => {
-            if (!res.ok) {
-              const errorText = await res.text();
-              console.error("Server error response:", errorText);
-              throw new Error(`Server responded with status ${res.status}`);
-            }
-            return res.json();
-          })
-          .then(res => console.log("Login success:", res))
-          .catch(err => console.error("Login failed:", err));
+        .then(async (res) => {
+          if (!res.ok) {
+            const errorText = await res.text();
+            console.error("Server error response:", errorText);
+            throw new Error(`Server responded with status ${res.status}`);
+          }
+          return res.json();
+        })
+        .then(res => console.log("Login success:", res))
+        .catch(err => console.error("Login failed:", err));
       } catch (error) {
         console.error("Error fetching Google user info:", error);
       }
@@ -77,6 +78,7 @@ function App() {
               onLogin={handleLogin}
               onSignup={handleLogin}
               setUserDetails={setUserDetails} // Pass setUserDetails to Login component
+
             />
           } />
           <Route path="/nonprofit" element={<div>NonProfit Page</div>} />
